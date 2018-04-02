@@ -9,7 +9,7 @@ Since the course is primarily using R as the programming language, unless otherw
 
 ### Group Members
 * Mark 
-* Danny
+* Danny 0452 256 666
 * Martin 0414 638 601
 * Linda
 * Justin 
