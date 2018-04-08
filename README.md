@@ -8,7 +8,7 @@ This repository is for the major group work for Statistical Thinking for Data Sc
 Since the course is primarily using R as the programming language, unless otherwise practical, all group members should be using R version 3.4.4. Other programming languages may be used (especially in the data collection phase) as some APIs will not interact with R, but will interact with Java or Python. 
 
 ### Group Members
-* Mark 
+* Mark 0450 548 776
 * Danny 0452 256 666
 * Martin 0414 638 601
 * Linda
