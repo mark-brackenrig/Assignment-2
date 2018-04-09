@@ -13,7 +13,7 @@ Since the course is primarily using R as the programming language, unless otherw
 * Martin 0414 638 601
 * Linda
 * Justin 
-* Mary-Alice
+* Mary-Alice 0414 624 429
 
 ### Use of Wiki
 A wiki for this project has been set up to share knowledge across the group. All group members are expected to contribute to the wiki to produce documentation for the project including meeting minutes, discussion topics, code snippets and documentation and key milestones/decisions.
