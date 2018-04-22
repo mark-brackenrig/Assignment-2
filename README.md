@@ -32,4 +32,19 @@ A wiki for this project has been set up to share knowledge across the group. All
 
 * Standups can be done ad-hoc, please check-in slack on demand to update each other.
 
+# Data Sets
+
+## Listings
+The listings data set contains data about the AirBnB listings. There are 32,830 records in this data set. This data set includes descriptions of the listing, features about the listing, for example, amenities and number of bedrooms and bathrooms, and ratings of the property.
+
+## Reviews
+This data set contains all of the text reviews of each of the properties.
+
+## Calandar
+This data set contains data around whether or not the property is available on a particular date.
+
+## Opera House by Transport
+This data set contains the time in seconds and the distance in meters between the listing and the sydney opera house when catching public transport (more landmarks to come).
+
+
 
