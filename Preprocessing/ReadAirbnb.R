@@ -10,11 +10,12 @@ library(readr)
 #Run through each file and 
 for(i in 1:length(files)){
 #Read file  
+  if(grepl(pattern = ".csv",x = files[i])==T){
 temp <- read_csv(files[i])
 #call the file by the name of the csv
 assign(substr(files[i], start = 0, stop = nchar(files[i])-4),temp)
 #remove the temp file name
-rm(temp)  
+rm(temp)  }
 }
 
-
+setwd("C:/Users/mbrackenrig/Documents/Assignment-2")
