@@ -61,11 +61,11 @@ listings$host_response_rate <- as.numeric(listings$host_response_rate)
 
 ## Convert t/f to factors ##
 
-truefalse <- function(x){
-  if(length(unique(x))<15){
-as.factor(x)    
-  }
-}
+#truefalse <- function(x){
+#  if(length(unique(x))<15){
+#as.factor(x)    
+#  }
+#}
 
 
 #Host Verifications
