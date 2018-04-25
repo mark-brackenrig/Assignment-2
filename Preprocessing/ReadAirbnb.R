@@ -18,4 +18,4 @@ assign(substr(files[i], start = 0, stop = nchar(files[i])-4),temp)
 rm(temp)  }
 }
 
-setwd("C:/Users/mbrackenrig/Documents/Assignment-2")
+
