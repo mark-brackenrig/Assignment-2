@@ -9,25 +9,18 @@
 # 
 
 ## Price Fields 
-
-    # First 
-    listings$price <- gsub(pattern = "\\$", replacement = "", listings$price)
-    listings$price <- gsub(pattern = "\\,", replacement = "", listings$price)
-    listings$price <- as.numeric(listings$price)
-    
     #clean Price fields
     priceclean <- function(x){
       x <- gsub(pattern = "\\$", replacement = "", x)
       x <- gsub(pattern = "\\,", replacement = "", x)
       x <- as.numeric(x)
-      
     }
     
     #Check price fields
     subset(colnames(listings),grepl("price",tolower(colnames(listings)))==T)
     
     #other price fields clean
-    
+    listings$price <- priceclean(listings$price)
     listings$weekly_price <- priceclean(listings$weekly_price)
     listings$monthly_price <- priceclean(listings$monthly_price)
 
@@ -60,12 +53,14 @@ listings$host_response_rate <- as.numeric(listings$host_response_rate)
 
 
 ## Convert t/f to factors ##
+colnames(listings[,grep(pattern = "is_", colnames(listings))])
 
-#truefalse <- function(x){
-#  if(length(unique(x))<15){
-#as.factor(x)    
-#  }
-#}
+#columns with "is_" in them tend are t/f
+
+listings$property_type <- as.factor(listings$property_type)
+listings$host_is_superhost <- as.factor(listings$host_is_superhost) 
+listings$is_location_exact <- as.factor(listings$is_location_exact) 
+
 
 
 #Host Verifications
