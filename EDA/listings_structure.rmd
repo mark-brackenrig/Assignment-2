@@ -1,0 +1,162 @@
+---
+title: "Airbnb Listings EDA"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load Libraries
+
+DataExplorer for EDA helper functions
+Amelia for dealing with Missing Values
+Hmisc for correlation analysis
+
+```{r}
+suppressWarnings(library(DataExplorer))
+suppressWarnings(library(Amelia))
+suppressWarnings(library(tidyverse))
+suppressWarnings(library(Hmisc))
+```
+
+## Load Airbnb Listings
+
+Main Airbnb Dataset with all cumulative listings as at Jan 2018
+
+```{r}
+listings_filename = 'G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/listings.csv'
+listings <- read_csv(listings_filename)
+```
+
+TODO: Deal with loading issues
+
+## Data Structure
+
+Dimensions: Approx. 33,000 Listings and 96 Features
+
+```{r}
+dim(listings)
+```
+
+Memory size of dataset, see if we need to work on subset if too large (135 mb)
+
+```{r}
+object.size(listings)
+```
+
+Features
+
+```{r}
+names(listings)
+```
+
+Feature structure
+
+```{r}
+str(listings)
+```
+
+Head
+
+```{r}
+head(listings,10)
+```
+
+Tail
+
+```{r}
+tail(listings,10)
+```
+
+
+## Summary
+
+5 Point summary of each feature
+
+```{r}
+summary(listings)
+```
+
+We can see a number of missing values on a number of features
+
+## Missing Data
+
+Use Amelia to explore missing values
+
+```{r}
+missmap(listings, main="Missing values vs observed")
+```
+
+Use DataExplorer instead to explore missing values
+
+```{r}
+plot_missing(listings)
+```
+
+TODO: Still not good representation image wise
+TODO: Is it MCAR / MNAR?
+
+
+## Feature Distributions
+
+Look at shape of each feature.
+
+This will only look at discrete (and therfore also give indication of potentially categorical data)
+
+```{r}
+plot_bar(listings)
+```
+
+Continuous Features Distribution (Data Explorer will only plot histogram for continuous features automatically)
+
+```{r}
+plot_histogram(listings)
+```
+
+
+## Feature Correlations
+
+Look at correlations between features
+
+```{r}
+plot_correlation(listings, use = "pairwise.complete.obs")
+```
+
+Hard to visualize due to too many features, instead print the correlated features using the Hmisc package rcorr function.
+This also allows p-values associated with the correlation.
+Only want list of correlations where 1) 5% significance level and 2) moderate to strong correlation i.e. > 0.4
+
+```{r}
+
+# have also not checked pearson assumptions
+options(warn=-1)
+correlations <- rcorr(as.matrix(as.data.frame(lapply(listings, as.numeric))), type="pearson")
+# Issue with as.matrix due to NA, getting storage error
+options(warn=0)
+
+n_col = dim(listings)[2]
+for (i in 1:n_col){
+  for (j in 1:n_col){
+    if ( !is.na(correlations$P[i,j])){
+      if ( correlations$P[i,j] < 0.05 && abs(correlations$r[i,j]) > 0.4) {
+        print(paste(rownames(correlations$P)[i], "-" , colnames(correlations$P)[j], ": ", correlations$r[i,j]))
+      }
+    }
+  }
+}
+```
+
+
+## Feature Outliers
+
+Look at outliers for each features. Note this is univariate analysis.
+
+```{r}
+# Takes too long
+#plot_boxplot(listings, by="price")
+
+outlier(listings[!is.na(listings)]$price)
+new_DF <- DF[is.na(DF$Var),]
+
+```
