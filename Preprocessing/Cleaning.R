@@ -64,6 +64,57 @@ listings$is_location_exact <- as.factor(listings$is_location_exact)
 
 
 #Host Verifications
+Host_Verifications <- subset(listings, select = c("id", "host_verifications"))
+Host_Verifications$host_verifications <- gsub(pattern = "\\]", replacement = "",Host_Verifications$host_verifications)
+Host_Verifications$host_verifications <- gsub(pattern = "\\[", replacement = "",Host_Verifications$host_verifications)
+Host_Verifications$host_verifications <- gsub(pattern = "\\'", replacement = "",Host_Verifications$host_verifications)
+
+split <- strsplit(Host_Verifications$host_verifications,split = ",")
+split <- unlist(split)
+split <- unique(split)
+
+
+for(i in 1:length(split)){
+  Host_Verifications$temp <- grepl(pattern = split[i] ,x = Host_Verifications$host_verifications)
+  colnames(Host_Verifications)[colnames(Host_Verifications)=="temp"] <- paste0("host_verification_",split[i])
+temp <- NULL
+}
+Host_Verifications$host_verifications <- NULL
+
+listings <- merge(Host_Verifications, listings, by  = "id" )
+
+## Amenities
+
+Amenities <- subset(listings, select = c("id", "amenities"))
+Amenities$amenities <- gsub(pattern = "\\{", replacement = "",Amenities$amenities)
+Amenities$amenities <- gsub(pattern = "\\}", replacement = "",Amenities$amenities)
+Amenities$amenities <- gsub(pattern = '\"',fixed = T, replacement = "",Amenities$amenities)
+
+split <- strsplit(Amenities$amenities,split = ",")
+split <- unlist(split)
+split <- unique(split)
+
+
+for(i in 1:length(split)){
+  Amenities$temp <- grepl(pattern = split[i] ,x = Amenities$amenities)
+  colnames(Amenities)[colnames(Amenities)=="temp"] <- paste0("Amenities_",split[i])
+  temp <- NULL
+}
+Amenities$amenities <- NULL
+
+summary(Amenities)
+keep <- c()
+for(i in 2:ncol(Amenities)){
+  #Choose 650, i.e. at least approximately 2% of properties should have this feature  
+  if(sum(Amenities[,i]==T)>650){
+keep <- c(keep, i)    
+    
+  }
+}
+
+Amenities <- Amenities[,c(1,keep)]
+
+listings <- merge(Amenities, listings, by  = "id" )
 
 
 
