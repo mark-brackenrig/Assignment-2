@@ -55,17 +55,18 @@ library(tidyverse)
 
 ## better approach
 base_path <- getwd()
+base_path
 wb_filename <- loadWorkbook("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx")
-wb_fullpath <- paste(base_path, tourism_filename, sep="")
+wb_fullpath <- paste(base_path, wb_filename, sep="")
 
 # Set up excel ranges to read in remaining blocks of data from the workbook
 rs <- 8
-re <- rs + 9
+re <- rs + 5
 
 # starting with block1=visitors from sheet="China"
-B1_raw <- readWorksheetFromFile(wb, sheet = "China", startRow = 8, startCol = 1,
-                               endRow = 13, endCol = 12 )
-#rm(B1_raw, B1_t, B1)
+B1_raw <- readWorksheetFromFile(wb_fullpath, sheet = "China", startRow = 8, startCol = 1,
+                               endRow = 10, endCol = 12 )
+#rm(B1_raw, B1_t, B1, wb, wb_filename, base_path, wb_fullpath)
 str(B1_raw)
 dim(B1_raw)
 View(B1_raw)
@@ -75,43 +76,44 @@ View(B1_raw)
 #View(B1_t)   
 ## Note: Martin is using melt() instead of t()
 
-## Transpose Purpose & Year down the rows 
-## so we have Year, Country, Purpose, Visitors, Spend, Nights etc
+## Transpose Purpose & Year down the rows, final structure is ...
+##   Year, Country, Purpose, Visitors, Spend, Nights etc
 
+###
 # see spreadsheet 'Munging.xlsx' for mockup.
+###
+
 
 # create new columns: 
 #   Country = sheet name (or A7)
 # (not required) Purpose  = col1 name                     ### TO DO: pass col1 name to new Reason column ###
 #   Col1 name & "Year" = 2007 to 2017
 
-# add column vector "Country", populate with Sheet name
+# work out number of times to populate 'Country'
 CR <- length(B1$Purpose)     ### This is referenced in the mutate statement
 
-# add a column vector "Year", populate 2007 to 2017 for each block
-##... create empty column ...
-##... populate with the following ...
+# work out how many times to repeat the pattern of years
 K <- unique(B1$Purpose)
-Y <- c(rep(2007,K):rep(2017,K))    ### not quite right but this is the idea
-       lapply(Y)                  ### Tidy up and put this bit into the mutate statement
+yrs <- as.factor(c(2007:2017))
+all_yrs <- rep(Z,K)                
 
-B1 <- mutate(B1_raw, Country = c(Country = c(sheetname:CR)), 
-                    Year = "lappystmtgoeshere")
+# add column vector "Country", populate with Sheet name
+# add a column vector "Year", populate 2007 to 2017 for each block
+B1 <- mutate(B1_raw, Country = rep("sheetname":CR), 
+                    Year = all_yrs)
 View(B1)
-
 
 # move new columns to begining of data frame
 B1 <- select(B1, Year, Country, Purpose, everything())
 View(B1)
 
 
-# Set up excel ranges to read in remaining blocks of data from the workbook
+# Set up excel ranges to read in remaining blocks of data from all sheets in the workbook
 
 rs <- 8
 re <- rs + 9
 rs1 <- re + 3
 re1 <- rs1 +9
-
 
 
 # loop through all these ... rs2 = re1 + 3 = rs2 + 9 for all data blocks
