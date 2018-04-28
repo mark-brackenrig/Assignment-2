@@ -5,7 +5,9 @@
 setwd("G:\\Team Drives\\STDS - Assignment 2 - 3MDL\\Dataset")
 getwd() 
 
-# check java version
+## Note: these require JAVA to be installed.  Using v8+ in this code
+
+# check java version ... returns error if JAVA not installed so go and get it!
 system("java -version")
 
 # set environment variable for java - this is not required if already been added to o/s system variables
@@ -16,20 +18,24 @@ Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk/")
 
 install.packages("XLConnect")
 install.packages("XLConnectJars")  #dependency, called by XLConnect
-install.packages("reshape2")
+install.packages("reshape2")       #has recast()
 library(XLConnectJars)
 library(XLConnect)
 library(reshape2)
 
 ## EXAMPLE OF SYNTAX
-#demoExcelFile <- system.file("demoFiles/mtcars.xlsx", package = "XLConnect")
-#mm <- as.matrix(readWorksheetFromFile(demoExcelFile, sheet=1))
-#class(mm)<-"character" # convert all to character
-#which(mm=="3.435", arr.ind=T)
-#read.table(text=apply(mm[25:27, 6:8],1,paste, collapse="\t"), sep="\t")
+##
+# demoExcelFile <- system.file("demoFiles/mtcars.xlsx", package = "XLConnect")
+# mm <- as.matrix(readWorksheetFromFile(demoExcelFile, sheet=1))
+# class(mm)<-"character" # convert all to character
+# which(mm=="3.435", arr.ind=T)
+# read.table(text=apply(mm[25:27, 6:8],1,paste, collapse="\t"), sep="\t")
 
 
 ## DATA MUNGING OBJECTIVE
+##
+## Steps followed in Excel that should be reproduced/improved on
+##
 # A7 = country name
 # A8:L18 = first block
 # Transpose first block (not required?)
@@ -44,7 +50,7 @@ library(reshape2)
 
 
 
-## Read in first block
+## Read in first block - need to get data from all over the spreadsheets
 
 ## better approach?
 # wb <- loadWorkbook("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx")
@@ -93,7 +99,7 @@ B3
 ## Add this to the loop above:
 ## In each block ... 
 ##
-## 1. Pull out row 1 to use as column headings
+## 1. Pull out a specific row  to use as column headings
 ##
 ## 2. replace leading text 'YEAR ENDING DECEMBER' with rs
 ##    'YEAR ENDING DECEMBER 2007' becomes 'VISITORS 2007'
@@ -157,8 +163,12 @@ B1_t
 ## by city, business ready (for more groupings, add to the 'by=' argument)
 ## selecting only listings with specific factors
 
-#F <- abnblist[abnblist$cancellation_type=="Flexible"
-#aggregate(F$number_of_reviews, by=F["city"], FUN=sum)
+F <- abnblist[abnblist$cancellation_type=="Flexible"
+aggregate(F$number_of_reviews, by=F["city", "is_business_travel_ready"], FUN=sum)
+
+## Merge matching AirBnB listings with Travel stats - matching on City, Year, Business/non-business
+## ... take one data frame and add extra columns, sourced from the second data frame
+## ... result is single aggregated data frame
 
 
 #### Abandonded ... using package: excel.link ####
