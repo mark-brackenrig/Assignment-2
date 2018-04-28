@@ -1,0 +1,685 @@
+---
+title: "STDS_3MDL_rough_stuff"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# My Prep
+
+Install and load the required packages.
+
+```{r setup_MA}
+
+## list objects and packages
+search()
+
+## install packages
+
+#install.packages("tm")
+#install.packages("wordcloud")
+#install.packages("SnowballC")
+#install.packages("ggplot2")
+#install.packages("igraph")
+#install.packages("topicmodels")
+#install.packages("lubridate")   ## for working with dates
+
+#load packages
+library(tm)
+library(wordcloud)
+library(ggplot2)
+library(SnowballC)
+library(cluster)
+library(igraph)
+library(topicmodels)
+library(lubridate) 
+
+
+#set the working directory for R and confirm it is correct
+
+###
+### Note: The required files are located on secured share. 
+###       NDA required when requesting access to this directory as the boss is concerned about making them available 
+###       before he has confirmed what they contain.
+###       
+
+setwd("G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset")
+getwd() 
+
+## clean up the environment to free up memory
+rm(list = ls())
+
+```
+
+# Load issues
+
+listings csv included values starting with "=-".  This returned error on load (more columns than headings)
+
+Fix:
+replace "=" with ""   (number of occurances in jan18 scrape file: 2769 )
+
+```{r load}
+## Load data
+
+setwd("AirBnB")
+abnblist <- read_csv("listings.csv", TRUE)
+
+```
+
+```{r quick look}
+
+# Find out number of rows and columns
+dim(abnblist) 
+
+# Show data types for each column
+sapply(abnblist, class)
+
+# find out more about the data
+str(abnblist)
+
+# Show first 10 records
+head(abnblist,10)
+
+# Show last 10 records
+tail(abnblist,10) 
+
+# a quick look at some interesting factors
+unique(abnblist$cancellation_policy)
+unique(abnblist$property_type)
+unique(abnblist$room_type)
+unique(abnblist$bed_type)
+unique(abnblist$city)
+unique(abnblist$market)
+unique(abnblist$is_business_travel_ready)
+
+summary(abnblist$number_of_reviews)
+```
+
+# Results of quick look at AirBnB Listings
+
+> head(abnblist)
+# A tibble: 6 x 96
+       id listing_url  scrape_id last_scraped name  summary        space  
+    <int> <chr>            <dbl> <date>       <chr> <chr>          <chr>  
+1  1.35e7 https://www~   2.02e13 2018-01-13   Delu~ 我的房源靠近Olympic~ NA     
+2  1.59e7 https://www~   2.02e13 2018-01-13   Xmas~ Our place is ~ It has~
+3  1.62e7 https://www~   2.02e13 2018-01-13   Larg~ Massive 2 bed~ NA     
+4  2.23e7 https://www~   2.02e13 2018-01-13   Clea~ One single ro~ NA     
+5  2.14e7 https://www~   2.02e13 2018-01-13   Bran~ A comfortable~ - 26sq~
+6  2.24e7 https://www~   2.02e13 2018-01-13   Serv~ Newly renovat~ NA     
+# ... with 89 more variables: description <chr>,
+#   experiences_offered <chr>, neighborhood_overview <chr>, notes <chr>,
+#   transit <chr>, access <chr>, interaction <chr>, house_rules <chr>,
+#   thumbnail_url <chr>, medium_url <chr>, picture_url <chr>,
+#   xl_picture_url <chr>, host_id <int>, host_url <chr>, host_name <chr>,
+#   host_since <date>, host_location <chr>, host_about <chr>,
+#   host_response_time <chr>, host_response_rate <chr>,
+#   host_acceptance_rate <chr>, host_is_superhost <chr>,
+#   host_thumbnail_url <chr>, host_picture_url <chr>,
+#   host_neighbourhood <chr>, host_listings_count <int>,
+#   host_total_listings_count <int>, host_verifications <chr>,
+#   host_has_profile_pic <chr>, host_identity_verified <chr>,
+#   street <chr>, neighbourhood <chr>, neighbourhood_cleansed <chr>,
+#   neighbourhood_group_cleansed <chr>, city <chr>, state <chr>,
+#   zipcode <int>, market <chr>, smart_location <chr>, country_code <chr>,
+#   country <chr>, latitude <dbl>, longitude <dbl>,
+#   is_location_exact <chr>, property_type <chr>, room_type <chr>,
+#   accommodates <int>, bathrooms <dbl>, bedrooms <int>, beds <int>,
+#   bed_type <chr>, amenities <chr>, square_feet <int>, price <chr>,
+#   weekly_price <chr>, monthly_price <chr>, security_deposit <chr>,
+#   cleaning_fee <chr>, guests_included <int>, extra_people <chr>,
+#   minimum_nights <int>, maximum_nights <int>, calendar_updated <chr>,
+#   has_availability <chr>, availability_30 <int>, availability_60 <int>,
+#   availability_90 <int>, availability_365 <int>,
+#   calendar_last_scraped <date>, number_of_reviews <int>,
+#   first_review <date>, last_review <date>, review_scores_rating <int>,
+#   review_scores_accuracy <int>, review_scores_cleanliness <int>,
+#   review_scores_checkin <int>, review_scores_communication <int>,
+#   review_scores_location <int>, review_scores_value <int>,
+#   requires_license <chr>, license <chr>, jurisdiction_names <chr>,
+#   instant_bookable <chr>, is_business_travel_ready <chr>,
+#   cancellation_policy <chr>, require_guest_profile_picture <chr>,
+#   require_guest_phone_verification <chr>,
+#   calculated_host_listings_count <int>, reviews_per_month <dbl>
+
+
+## cancellation_policy: 4 levels
+moderate        strict          flexible        super_strict_30
+
+## property_type: 34 levels
+Condominium            Apartment              House                 
+Serviced apartment     Guest suite            Townhouse             
+Other                  Bed & Breakfast        Villa                 
+Vacation home          Guesthouse             Cabin                 
+Dorm                   Hostel                 Camper/RV             
+Loft                   Boutique hotel         Heritage hotel (India)
+Bungalow               Casa particular        Timeshare             
+Boat                   Earth House            In-law                
+Chalet                 Nature lodge           Island                
+Tent                   Yurt                   Treehouse             
+Castle                 Hut                    Tipi                  
+Train
+
+## room_type: 3 levels
+Entire home/apt Private room    Shared room 
+
+## bed_type: 5 levels
+Real Bed      Pull-out Sofa Couch         Futon         Airbed  
+
+## is_business_travel_ready: Levels: f t
+
+## market: 12 levels
+Sydney                                                       
+Other (International)          Prague                        
+Illawarra                      Central Florida Atlantic Coast
+Devon                          Gold Coast-Tweed              
+Edmonton                       D.C.                          
+Providence                     Central Coast 
+
+## city: 801 Levels
+Needs cleanup .... "Bondi Beach", "Coogee", "Coogee ,Sydney", "2095", " å²å“è²" etc
+
+## number_of_reviews
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   0.00    0.00    2.00   10.26    8.00  440.00 
+
+
+```{r play lrfit}
+
+# prep for lrfit() ... replace t f with 1 0 in for travel ready responses
+
+abnblist$is_business_travel_ready <- as.numeric(abnblist$is_business_travel_ready)
+#abnblist$is_business_travel_ready ## requires session interrupt if you run this line!
+
+cancFlex <- abnblist$cancellation_policy == "flexible"
+privRm <- abnblist$room_type == "Private room"
+
+
+## (1) Linear regression fit
+# assuming number of reviews depends on cancellation policy, room type and business travel ready
+### note: example adds two fact first using cbind(using, notUsing) ... creating a vector with binary content from one with successes (vector of 1s) and 
+
+lrfit <- glm( abnblist$instant_bookable ~ bed_type +  cancFlex + privRm, data=abnblist, family = binomial)
+
+lrfit
+ 
+32823/41710
+#[1] 0.7869336
+
+1-pchisq(41710, 32823)
+ 
+## (2) Introduce interaction between flexible cancelation and  private room 
+ 
+lrfit <- glm( abnblist$instant_bookable ~ bed_type *   cancFlex + privRm, data=abnblist, family = binomial)
+ 
+lrfit
+
+ 32823/41700
+#[1] 0.7871223
+
+ 
+## (3) Drop flexible cancellation 
+ 
+lrfit0 <- update(lrfit, ~ . - bed_type:cancFlex) # can't see any difference here
+
+lrfit
+
+
+   
+```
+
+## Result
+
+Call:  glm(formula = abnblist$instant_bookable ~ bed_type + +cancFlex + 
+    privRm, family = binomial, data = abnblist)
+
+Coefficients:
+          (Intercept)          bed_typeCouch          bed_typeFuton  bed_typePull-out Sofa       bed_typeReal Bed  
+              -0.6502                -0.7258                -0.5236                -0.8325                -0.1793  
+         cancFlexTRUE             privRmTRUE  
+               0.2488                 0.1753  
+
+Degrees of Freedom: 32829 Total (i.e. Null);  32823 Residual
+Null Deviance:	    41910 
+Residual Deviance: 41710 	AIC: 41720
+
+### observations
+
+The example I'm following points out the significance of residual deviance on residual (eg: "29.92 on 10 is highly significant"), then does 1-pearson chi squared using these two numbers.
+
+My result are: 41680, 32826  (how significant is this?)
+which produce: 0 (is this correct?)
+
+
+## Result 2
+Call:  glm(formula = abnblist$instant_bookable ~ bed_type * cancFlex + 
+    privRm, family = binomial, data = abnblist)
+
+Coefficients:
+                       (Intercept)                       bed_typeCouch                       bed_typeFuton  
+                           0.07925                            -1.52591                            -1.34801  
+             bed_typePull-out Sofa                    bed_typeReal Bed                        cancFlexTRUE  
+                          -1.41405                            -0.90972                            -1.67860  
+                        privRmTRUE          bed_typeCouch:cancFlexTRUE          bed_typeFuton:cancFlexTRUE  
+                           0.17496                             2.07920                             2.11547  
+bed_typePull-out Sofa:cancFlexTRUE       bed_typeReal Bed:cancFlexTRUE  
+                           1.52377                             1.93056  
+
+Degrees of Freedom: 32829 Total (i.e. Null);  32819 Residual
+Null Deviance:	    41910 
+Residual Deviance: 41700 	AIC: 41720
+
+
+## Result 3
+
+
+```{r play }
+
+summary(lrfit)
+
+plot(lrfit)
+
+# extract the residuals: 
+#     deviance, 
+#     pearson, 
+#     response (response-fitted value),
+#     working (the working dependent variable in the IRLS algorithm - linear predictor), 
+#     partial (matrix of working residuals formed by omitting each term inthe model) 
+
+# residuals(lrfit,type="pearson")  ## requires session interrupt if you run this line!!
+
+```
+## Result of summary
+
+Call:
+glm(formula = abnblist$instant_bookable ~ bed_type * cancFlex + 
+    privRm, family = binomial, data = abnblist)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-1.2871  -0.9145  -0.8506   1.4308   1.8886  
+
+Coefficients:
+                                   Estimate Std. Error z value Pr(>|z|)    
+(Intercept)                         0.07925    0.42882   0.185  0.85337    
+bed_typeCouch                      -1.52591    0.77514  -1.969  0.04900 *  
+bed_typeFuton                      -1.34801    0.57399  -2.348  0.01885 *  
+bed_typePull-out Sofa              -1.41405    0.50517  -2.799  0.00512 ** 
+bed_typeReal Bed                   -0.90972    0.42888  -2.121  0.03391 *  
+cancFlexTRUE                       -1.67860    0.77090  -2.177  0.02945 *  
+privRmTRUE                          0.17496    0.02483   7.047 1.83e-12 ***
+bed_typeCouch:cancFlexTRUE          2.07920    1.21260   1.715  0.08641 .  
+bed_typeFuton:cancFlexTRUE          2.11547    0.93625   2.260  0.02385 *  
+bed_typePull-out Sofa:cancFlexTRUE  1.52377    0.89713   1.698  0.08942 .  
+bed_typeReal Bed:cancFlexTRUE       1.93056    0.77128   2.503  0.01231 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 41907  on 32829  degrees of freedom
+Residual deviance: 41697  on 32819  degrees of freedom
+AIC: 41719
+
+Number of Fisher Scoring iterations: 4
+
+******************************************************
+
+http://data.princeton.edu/R/glms.html
+
+To drop the age:noMore interaction in our model one could use
+
+> lrfit0 <- update(lrfit, ~ . - age:noMore)
+
+
+
+
+```{r trying out M/D idea}
+
+
+# Load Libraries
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(data.table)
+library(dplyr)
+
+
+# Params for API update
+start = 0
+end = 4
+
+# Get Review Data
+##reviews_filename = 'I:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/reviews.csv'
+reviews_filename = "C:\\Users\\MaryAlice\\Documents\\MDSI\\STDS\\Data Sets\\AirBnB\\reviews.csv"
+
+reviews <- read_csv(reviews_filename)
+
+df <- reviews[0:4,c('id','comments')]
+
+# Must be of format 'id' and 'text'
+df <- rename(df, text = comments)
+
+data <-list(documents=df)
+
+#### look at data
+summary(reviews)
+list(data)
+
+# Call Sentiment API
+api_key = '71efd21c43984d6685105508e235dc8b'
+sentiment_api_url = "https://westcentralus.api.cognitive.microsoft.com/text/analytics/v2.0/sentiment"
+
+response <- POST(sentiment_api_url, add_headers(`Ocp-Apim-Subscription-Key`=api_key),body=toJSON(data))
+response_content <- content(response, as="text", encoding = "utf-8")
+
+fromJSON(response_content)$documents %>%
+ mutate(id=as.numeric(id)) ->
+ responses
+
+df %>% left_join(responses, by = 'id') %>% select(c('id', 'score')) -> dfs
+
+
+#### look at df
+summary(df)
+list(df)
+
+######### looking further ...
+
+# load the docs into a corpus
+bossdocs <- Corpus(VectorSource(df))
+
+#load packages
+library(tm)
+library(wordcloud)
+library(ggplot2)
+library(SnowballC)
+library(cluster)
+library(igraph)
+library(topicmodels)
+
+
+# Remove ellipses . and and cross ?? "\x86" not required? and elongated hyphen - 
+#tm_map(bossdocs, removeWords, c("\x85", "\x96"))
+
+##
+## credit to Mutaz via DAM slack channel
+##
+
+#Transform to lower case
+bossdocs <- tm_map(bossdocs,content_transformer(tolower))
+
+#Strip digits
+bossdocs <- tm_map(bossdocs, removeNumbers)
+
+#Remove stopwords from standard stopword list 
+bossdocs <- tm_map(bossdocs, removeWords, stopwords("english"))
+
+#define and eliminate all custom stopwords
+myStopwords<-c("can","say","one","way","use","also","howev","tell","will","much","need","take","tend","even","like","particular","rather","said","get","well","make","ask","come","end","first","two","help","often","may","might","see","someth","thing","point","post","look","right","now","think","'ve","'re","anoth","put","set","new","good","want","sure","kind","larg","yes,","day","etc","quit","sinc","attempt","lack","seen","awar","littl","ever","moreov","though","found","abl","enough","far","earli","away","achiev","draw","last","never","brief","bit","entir","brief","great","lot")
+
+#define and eliminate all custom stopwords
+ABnBStopwords<-c("booking","arrival", "airbnb")
+
+bossdocs <- tm_map(bossdocs, removeWords, myStopwords)
+bossdocs <- tm_map(bossdocs, removeWords, ABnBStopwords)
+
+#Remove punctuation - replace punctuation marks with " "
+bossdocs <- tm_map(bossdocs, removePunctuation)
+
+#Strip whitespace
+#bossdocs <- tm_map(bossdocs, stripWhitespace)
+
+#inspect output
+list(bossdocs)  # not very informative duh!
+
+# Create document-term matrix
+dtm <- DocumentTermMatrix(bossdocs)
+
+#generate a summary of the dmv
+dtm
+
+freq <- colSums(as.matrix(dtm))
+
+## See how many terms are in the corpus
+length(freq)    ## last result: 60
+
+## create a new vector containing the term frequencies sorted in ascending order
+ord <- order(freq,decreasing=TRUE)
+
+# see which are the most frequently occurring termss
+freq[head(ord)]
+
+#inspect least frequently occurring terms
+freq[tail(ord)]
+
+# simple wordcloud
+set.seed(42)
+wordcloud(names(freq),freq,min.freq=30,colors=brewer.pal(6,"Dark2"))
+wordcloud(names(freq),freq,max.freq=30,colors=brewer.pal(6,"Dark2"))
+
+#print wordcloud to a file for report to the boss
+wordcloud_file <- "wcloud_colour.png"
+png(wordcloud_file)
+   wordcloud(names(freq),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+      dev.off()
+
+## create a couple of dictionaries: property related terms, review related terms 
+## do this with lemmas instead of stems
+## break by theme
+
+```
+
+```{r WIP themes}
+
+m<-as.matrix(dtm)
+
+#write as csv file
+write.csv(m,file="dtmAsMatrix.csv")
+
+#shorten rownames for display purposes
+rownames(m) <- paste(substring(rownames(m),1,3),rep("..",nrow(m)),
+                     substring(rownames(m),
+                               nchar(rownames(m))-12,nchar(rownames(m))-4))
+## Observation:
+## There weren't any row names.  This step simply appended ".." to each row number
+## But I would like knowhow to add some
+
+## write out again to look at the rownames
+write.csv(m,file="dtmAsMatrix.csv")
+
+#compute distance between document vectors
+d <- dist(m)
+
+
+## write out again to look at the distances
+
+######
+## write.csv(d,file="vectorDistances.csv")
+###### 
+## won't run:
+###### Error in as.data.frame.default(x[[i]], optional = TRUE) : 
+###### cannot coerce class ""dist"" to a data.frame
+## Duh! think about this hint: it's trying to coerce to a data.frame
+#####
+## write out again to look at the distances
+
+## doing it properly this time
+dOutput<-as.matrix(d)
+write.csv(dOutput,file="vectorDistances.csv")
+
+# fisrt look: run hierarchical clustering using Ward's method
+## paste next three lines into console to run - b/c markdown can't layer
+groups <- hclust(d,method="ward.D")
+
+```
+
+# IMPORTANT
+# IMPORTANT - The following chunk must be copied and pasted into the console for it to run!
+# IMPORTANT
+
+```{r WIP Themes cont'd}
+##
+##
+## Note to self: DID YOU REMEMBER TO COPY TO CONSOLE FIRST?
+##
+##
+
+#plot, use hang to ensure that labels fall below tree
+## IMPORTANT 
+## paste into console to run
+plot(groups, hang=-1)
+
+## This previously returned an error  [error ... figure margins too large]
+## Today works fine.
+##`Both times my R-Studio session was zoomed-in, only today not as strongly 
+
+#cut into 2 subtrees. Try 3,4,5,6 cuts; comment on your results
+## IMPORTANT 
+## paste into console to run
+rect.hclust(groups,2)
+
+#try another distance measure
+cosineSim <- function(x){
+  as.dist(x%*%t(x)/(sqrt(rowSums(x^2) %*% t(rowSums(x^2)))))
+}
+cs <- cosineSim(m)
+cd <- 1-cs
+
+#run hierarchical clustering using cosine distance
+## IMPORTANT 
+## paste next three lines into console to run - b/c markdown can't layer
+groups <- hclust(cd,method="ward.D")
+
+#plot, use hang to ensure that labels fall below tree
+## paste into console to run
+plot(groups, hang=-1)
+
+#cut into 2 subtrees. Try 3,4,5,6 cuts; 
+## IMPORTANT 
+## paste into console to run
+    rect.hclust(groups,3)
+    rect.hclust(groups,4)
+    rect.hclust(groups,5)
+    rect.hclust(groups,6)
+    
+#Print to file for report to the boss
+## IMPORTANT 
+## paste into console to run
+dendrogram_file <- "dendro.png"
+png(dendrogram_file)
+   groups <- hclust(cd,method="ward.D")
+   plot(groups, hang=-1)
+    rect.hclust(groups,6)
+    #rect.hclust(groups,5)
+dev.off()
+    
+      
+
+##
+## Observations:
+##
+## rect.hclust() can be run multiple times with different values to show different groupings 
+## on the same dendrogram.
+## 
+## Note to self: Changing the colours so they are easier to read
+##               Work out how to do this
+##
+##               Have found how to change colour of branches and labels at ends of branches 
+##               but not the rectangles ...yet.
+##
+##  Futher collaboration with my trusted colleague around how to derive more meaning from our 
+##  analysis resulted in the following idea
+
+
+## Plot the groupings (clusters) of the dendogram by their group membership
+
+# Recall:  dtmr ist the restricted document term matrix based on the full corpus
+
+## create a cut based on 6 groupings 
+cut <- cutree(groups, k=6) # groups is defined above, using hclust()
+
+## see the names of the files in this cut  
+names(cut) 
+
+
+```
+
+
+```{r WIP cloud}
+############ Work in progress ############
+
+## Create a dtm for each cluster
+## eg: create a subset of the dtm for the files in the cut for cluster 4
+
+dtm1 <- dtmr[names(subset(cut[cut==1],),)]
+
+#dtm2 <- dtmr[names(subset(cut[cut==2],),)]
+
+#dtm3 <- dtmr[names(subset(cut[cut==3],),)]
+
+#dtm4 <- dtmr[names(subset(cut[cut==4],),)]
+
+##
+## Note to self: Fix error in the above code
+##               argument "subset" is missing, with no default
+##
+##              Set up parameters to remove redundant code
+##
+
+##get frequencies, sort and then plot a word cloud for each cluster ##
+
+#freqr1 <- colSums(as.matrix(dtm1))
+#length(freqr1)
+#ordr <- order(freqr1,decreasing=TRUE)
+
+#freqr2 <- colSums(as.matrix(dtm1))
+#length(freqr2)
+#ordr <- order(freqr2,decreasing=TRUE)
+
+#freqr3 <- colSums(as.matrix(dtm1))
+#length(freqr3)
+#ordr <- order(freqr3,decreasing=TRUE)
+
+#freqr4 <- colSums(as.matrix(dtm1))
+#length(freqr4)
+#ordr <- order(freqr4,decreasing=TRUE)
+
+## generate the four cluster-membership wordclouds ##
+
+#set.seed(42)
+#wordcloud(names(freq1),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#wordcloud(names(freq2),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#wordcloud(names(freq3),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#wordcloud(names(freq4),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+
+## print the four cluster-membership wordclouds to files for report to the boss ##
+
+#wordcloud_file <- "wcloud_cm1.png"
+#png(wordcloud_file)
+#   wordcloud(names(freq),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#      dev.off()
+
+#wordcloud_file <- "wcloud_cm2.png"
+#png(wordcloud_file)
+#   wordcloud(names(freq),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#      dev.off()
+
+
+#wordcloud_file <- "wcloud_cm3.png"
+#png(wordcloud_file)
+#   wordcloud(names(freq),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#      dev.off()
+
+
+#wordcloud_file <- "wcloud_cm4.png"
+#png(wordcloud_file)
+#   wordcloud(names(freq),freq,min.freq=95,colors=brewer.pal(6,"Dark2"))
+#      dev.off()
+
+############ end Work in progress ############
+```
+
+      
