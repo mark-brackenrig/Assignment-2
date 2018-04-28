@@ -19,9 +19,11 @@ Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk/")
 install.packages("XLConnect")
 install.packages("XLConnectJars")  #dependency, called by XLConnect
 install.packages("reshape2")       #has recast()
+install.packages("tidyverse")
 library(XLConnectJars)
 library(XLConnect)
 library(reshape2)
+library(tidyverse)
 
 ## EXAMPLE OF SYNTAX
 ##
@@ -49,20 +51,125 @@ library(reshape2)
 # merge with other country files
 
 
+## Read in first block - need to get data for this block from each of the spreadsheets
 
-## Read in first block - need to get data from all over the spreadsheets
+## better approach
+base_path <- getwd()
+base_path
+wb_filename <- loadWorkbook("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx")
+wb_fullpath <- paste(base_path, wb_filename, sep="")
 
-## better approach?
-# wb <- loadWorkbook("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx")
+# Set up excel ranges to read in remaining blocks of data from the workbook
+rs <- 8
+re <- rs + 5
 
-data <- readWorksheetFromFile("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx", 
-                               sheet = "China", startRow = 8, startCol = 1,
-                               endRow = 17, endCol = 12 )
-rm(data)
-str(data)
-dim(data)
+# starting with block1=visitors from sheet="China"
+B1_raw <- readWorksheetFromFile(wb_fullpath, sheet = "China", startRow = 8, startCol = 1,
+                               endRow = 10, endCol = 12 )
+#rm(B1_raw, B1_t, B1, wb, wb_filename, base_path, wb_fullpath)
+str(B1_raw)
+dim(B1_raw)
+View(B1_raw)
 
-## first approach
+## (not required .... transpose the block - swap rows and columns
+#B1_t <- as.data.frame(t(as.matrix(B1_raw))) ### TO DO: fix this!   messes up the col ###
+#View(B1_t)   
+## Note: Martin is using melt() instead of t()
+
+## Transpose Purpose & Year down the rows, final structure is ...
+##   Year, Country, Purpose, Visitors, Spend, Nights etc
+
+###
+# see spreadsheet 'Munging.xlsx' for mockup.
+###
+
+
+# create new columns: 
+#   Country = sheet name (or A7)
+# (not required) Purpose  = col1 name                     ### TO DO: pass col1 name to new Reason column ###
+#   Col1 name & "Year" = 2007 to 2017
+
+# work out number of times to populate 'Country'
+CR <- length(B1$Purpose)     ### This is referenced in the mutate statement
+
+# work out how many times to repeat the pattern of years
+K <- unique(B1$Purpose)
+yrs <- as.factor(c(2007:2017))
+all_yrs <- rep(Z,K)                
+
+# add column vector "Country", populate with Sheet name
+# add a column vector "Year", populate 2007 to 2017 for each block
+B1 <- mutate(B1_raw, Country = rep("sheetname":CR), 
+                    Year = all_yrs)
+View(B1)
+
+# move new columns to begining of data frame
+B1 <- select(B1, Year, Country, Purpose, everything())
+View(B1)
+
+
+# Set up excel ranges to read in remaining blocks of data from all sheets in the workbook
+
+rs <- 8
+re <- rs + 9
+rs1 <- re + 3
+re1 <- rs1 +9
+
+
+# loop through all these ... rs2 = re1 + 3 = rs2 + 9 for all data blocks
+
+rs2 <- re1 + 3
+re2 <- rs2 + 9
+
+# have a look at what we've got
+
+str(B1)
+B1
+B2
+B3
+
+
+#### Merging ideas ####
+
+## Create subset for matching against AirBnB listings
+## bring all the blocks together and pull out columns: Business, Non-Business, Total
+## Business =Business + Work, Non-Business =Total - Business - Work
+
+# set each block to a matrix
+# ... use: matrix() ...
+B1m <- as.matrix(B1)
+
+# create a list of matrices
+blocklist <- list(B1m, B2m, B3m)
+
+## transpose the blocks
+
+B1
+B1_t <- as.data.frame(t(as.matrix(B1)))
+B1_t
+
+
+# Extract columns of interest
+# ...  use: sapply(), lapply()  ...
+
+
+## Roll up AirBnB listings to match against travel data set 
+## by city, business ready (for more groupings, add to the 'by=' argument)
+## selecting only listings with specific factors
+
+F <- abnblist[abnblist$cancellation_type=="Flexible"
+              aggregate(F$number_of_reviews, by=F["city", "is_business_travel_ready"], FUN=sum)
+              
+              # at example using flights data object
+              by_day <- group_by(flights, year, month, day)
+              summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
+              
+              ## Merge matching AirBnB listings with Travel stats - matching on City, Year, Business/non-business
+              ## ... take one data frame and add extra columns, sourced from the second data frame
+              ## ... result is single aggregated data frame
+
+
+#### Abandoned: XLConnect - first approach ####
 
 # work out where the data is in the source workbook
 
@@ -118,6 +225,8 @@ Bcols <- read.table(text=apply(mm[7:8, 1:12],1,paste, collapse="\t"), sep="\t")
 Bcols
 
 # 4. create new column with country name
+B1_new <- mutate(B1, country = "China")
+
 
 # read in country name from cell A7
 country1 <- read.table(text=apply(mm[6:6, 1:1],1,paste, collapse="\t"), sep="\t")
@@ -126,49 +235,18 @@ country1
 # create new column vector with blockname 
 # ... use: values rs:1, rs1:1 etc
 
-
+# add column vector "Country", populate with Sheet name
+CR <- length(B1$Purpose)
+B1_final <- mutate(B1,Country = c(sheetname:CR))
 
 # add a column vector "Year", populate 2007 to 2017 for each block
 ##... create empty column ...
 ##... populate with the following ...
-B <- length(unique(data$metric))    # number of blocks
-Y <- rep(c(2007:2017),B)
-lapply(Y)
+K <- unique(B1$Purpose)
+Y <- c(rep(2007,K):rep(2017,K)
+lapply(Y)  ### finish this line !!
 
 # Remove rows with 'Total'
-
-## Create subset for matching against AirBnB listings
-## bring all the blocks together and pull out columns: Business, Non-Business, Total
-## Business =Business + Work, Non-Business =Total - Business - Work
-
-# set each block to a matrix
-# ... use: matrix() ...
-B1m <- as.matrix(B1)
-
-# create a list of matrices
-blocklist <- list(B1m, B2m, B3m)
-
-## transpose the blocks
-
-B1
-B1_t <- as.data.frame(t(as.matrix(B1)))
-B1_t
-
-
-# Extract columns of interest
-# ...  use: sapply(), lapply()  ...
-
-
-## Roll up AirBnB listings to match against travel data set 
-## by city, business ready (for more groupings, add to the 'by=' argument)
-## selecting only listings with specific factors
-
-F <- abnblist[abnblist$cancellation_type=="Flexible"
-aggregate(F$number_of_reviews, by=F["city", "is_business_travel_ready"], FUN=sum)
-
-## Merge matching AirBnB listings with Travel stats - matching on City, Year, Business/non-business
-## ... take one data frame and add extra columns, sourced from the second data frame
-## ... result is single aggregated data frame
 
 
 #### Abandonded ... using package: excel.link ####
