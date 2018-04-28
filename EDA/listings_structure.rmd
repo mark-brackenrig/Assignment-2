@@ -156,7 +156,6 @@ Look at outliers for each features. Note this is univariate analysis.
 # Takes too long
 #plot_boxplot(listings, by="price")
 
-outlier(listings[!is.na(listings)]$price)
-new_DF <- DF[is.na(DF$Var),]
+#outlier(listings[!is.na(listings)]$price)
 
 ```
