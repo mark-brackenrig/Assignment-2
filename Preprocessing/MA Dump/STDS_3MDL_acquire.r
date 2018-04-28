@@ -19,9 +19,11 @@ Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk/")
 install.packages("XLConnect")
 install.packages("XLConnectJars")  #dependency, called by XLConnect
 install.packages("reshape2")       #has recast()
+install.packages("tidyverse")
 library(XLConnectJars)
 library(XLConnect)
 library(reshape2)
+library(tidyverse)
 
 ## EXAMPLE OF SYNTAX
 ##
@@ -55,14 +57,42 @@ library(reshape2)
 ## better approach?
 # wb <- loadWorkbook("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx")
 
-data <- readWorksheetFromFile("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx", 
+# starting with sheet="China"
+
+B1_raw <- readWorksheetFromFile("Accommodation/IVS1 YE Dec 2017_UpdatedMar2018.xlsx", 
                                sheet = "China", startRow = 8, startCol = 1,
                                endRow = 17, endCol = 12 )
-rm(data)
-str(data)
-dim(data)
+#rm(B1_raw, B1_t, B1)
+str(B1_raw)
+dim(B1_raw)
+View(B1_raw)
 
-## first approach
+## transpose the blocks
+B1_t <- as.data.frame(t(as.matrix(B1_raw))) ### TO DO: fix this!   messes up the col ###
+View(B1_t)    
+
+# create new columns: 
+#   Country = sheet name (or A7)
+#   Reason  = col1 name                     ### TO DO: pass col1 name to new Reason column ###
+#   Year = 2007 to 2017
+
+B1 <- mutate(B1_t, Country = c("Country",rep("China",11)), 
+                    Reason = c("Reason",rep("Visitors",11)),
+                    Year = c("Year",2007:2017))
+View(B1)
+B1 <- arrange(B1, Year, Country, Reason)
+View(B1)
+
+
+# add a column vector "Year", populate 2007 to 2017 for each block
+##... create empty column ...
+##... populate with the following ...
+B <- length(unique(data$metric))    # number of blocks
+Y <- rep(c(2007:2017),B)
+lapply(Y)
+
+
+#### Abandoned: XLConnect - first approach ####
 
 # work out where the data is in the source workbook
 
@@ -118,6 +148,8 @@ Bcols <- read.table(text=apply(mm[7:8, 1:12],1,paste, collapse="\t"), sep="\t")
 Bcols
 
 # 4. create new column with country name
+B1_new <- mutate(B1, country = "China")
+
 
 # read in country name from cell A7
 country1 <- read.table(text=apply(mm[6:6, 1:1],1,paste, collapse="\t"), sep="\t")
@@ -165,6 +197,10 @@ B1_t
 
 F <- abnblist[abnblist$cancellation_type=="Flexible"
 aggregate(F$number_of_reviews, by=F["city", "is_business_travel_ready"], FUN=sum)
+
+# at example using flights data object
+by_day <- group_by(flights, year, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 
 ## Merge matching AirBnB listings with Travel stats - matching on City, Year, Business/non-business
 ## ... take one data frame and add extra columns, sourced from the second data frame
