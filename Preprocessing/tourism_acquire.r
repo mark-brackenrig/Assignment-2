@@ -1,5 +1,8 @@
 # This file takes the tourism spreadsheet data and turns into a tidy dataset
 
+# url <- "https://www.tra.gov.au/ArticleDocuments/233/IVS1%20YE%20Dec%202017.xlsx.aspx"
+# Need to get data manually and place in drive, since website does not use direct access and instead streams data through aspx page
+
 # Install XLConnect if not already installed
 if(!"XLConnect" %in% rownames(installed.packages())) {
   install.packages("XLConnect")
@@ -17,7 +20,9 @@ library(taRifx)     # destring
 
 tourism_base_path <- "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/Accommodation/"
 tourism_filename <- "IVS1 YE Dec 2017_UpdatedMar2018.xlsx"
+tourism_dest_filename <- "sydney_tourism_201803.csv"
 tourism_fullpath <- paste(tourism_base_path, tourism_filename, sep="")
+tourism_dest_fullpath <- paste(tourism_base_path, tourism_dest_filename, sep="")
 
 # Load tourism workbook
 tourism_workbook <- loadWorkbook(tourism_fullpath)
@@ -144,4 +149,6 @@ for (col in metric_columns) {
 str(tourism.data)
 head(tourism.data)
 
-# Merge with AirBNB
+# Write to shared drive
+write.csv(tourism.data, file=tourism_dest_filename)
+
