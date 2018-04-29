@@ -1,0 +1,57 @@
+reviews_url <- "http://data.insideairbnb.com/australia/nsw/sydney/2018-01-13/data/reviews.csv.gz"
+airbnb_gdrive_base_path <- "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/"
+reviews_filename <- "reviews.csv"
+reviews_full_path <- paste(airbnb_gdrive_base_path, reviews_filename, sep="")
+
+reviews <- data.frame()
+
+# If file already cached to g drive then load from there
+
+if (file.exists(reviews_full_path)) {
+  reviews <- read_csv(reviews_full_path)
+} else { # otherwise get from URL and save to gdrive
+  url = getURL(reviews_url, encoding="gzip")
+  reviews_table <- read.table(url)
+  write_csv(reviews_table, reviews_full_path)
+  reviews <- reviews_table
+}
+
+# Reviews now contains a properly loaded
+
+listings_url <- "http://data.insideairbnb.com/australia/nsw/sydney/2018-01-13/data/listings.csv.gz"
+airbnb_gdrive_base_path <- "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/"
+listings_filename <- "listings.csv"
+listings_full_path <- paste(airbnb_gdrive_base_path, listings_filename, sep="")
+
+listings <- data.frame()
+
+# If file already cached to g drive then load from there
+if (file.exists(listings_full_path)) {
+  listings <- read_csv(listings_full_path)
+} else { # otherwise get from URL and save to gdrive
+  url = getURL(listings_url, encoding="gzip")
+  listings_table <- read.table(url)
+  write_csv(listings_table, listings_full_path)
+  listings <- listings_table
+}
+
+# listings now contains a properly loaded
+
+calenders_url <- "http://data.insideairbnb.com/australia/nsw/sydney/2018-01-13/data/calenders.csv.gz"
+airbnb_gdrive_base_path <- "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/"
+calenders_filename <- "calenders.csv"
+calenders_full_path <- paste(airbnb_gdrive_base_path, reviews_filename, sep="")
+
+calenders <- data.frame()
+
+# If file already cached to g drive then load from there
+if (file.exists(calenders_full_path)) {
+  calenders <- read_csv(calenders_full_path)
+} else { # otherwise get from URL and save to gdrive
+  url = getURL(calenders_url, encoding="gzip")
+  calenders_table <- read.table(url)
+  write_csv(calenders_table, calenders_full_path)
+  calenders <- calenders_table
+}
+
+# calenders now contains a properly loaded
