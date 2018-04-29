@@ -81,17 +81,11 @@ grid <- expand.grid(destination = c("Sydney+Opera+House","Bondi+Beach", "Manly+B
 grid <- subset(grid, grid$destination!="Sydney+Opera+House"|grid$mode!="transit")
 
 Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timedata
-library(tcltk)
+
 ####Public Transport + Drive to all areas####
 
-pb <- tkProgressBar("Gmaps Progress", "Percentage of Records received",
-                    0, 100, 0)
 
-
-for(n in 1:140){
-
-
-  Data<-  foreach(i=((n-1)*(nrow(Timedata)/120)+1):(n*(nrow(Timedata)/120))) %dopar% {
+  Total_Data<-  foreach(i=1:nrow(Timedata)) %dopar% {
   library(gmapsdistance)
 
     #Dont steal my API
@@ -100,12 +94,7 @@ for(n in 1:140){
 
 }
 
-assign(Data, paste0("Total_Data"))
-rm(Total_Data)
-setTkProgressBar(pb, n/140*100)
 
-}
-close(pb)
 #Write to DF
 Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)) #turn to tidyform
 
@@ -113,17 +102,17 @@ Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)
 Total_Data_DF_Final <- cbind(Total_Data_DF, Timedata) #Match with the other stuff
 
 #Rename for Cleaning
-colnames(Opera_Public) <- c("Time", "Distance", "Status", "id")
+#colnames(Opera_Public) <- c("Time", "Distance", "Status", "id")
 
 #Change columns to correct format
 #Time in Seconds
-Opera_Public$Time <- as.numeric(as.character(Opera_Public$Time))
+#Opera_Public$Time <- as.numeric(as.character(Opera_Public$Time))
 
 #Distance in Meters
-Opera_Public$Distance <- as.numeric(as.character(Opera_Public$Distance))
+#Opera_Public$Distance <- as.numeric(as.character(Opera_Public$Distance))
 
 
-write_csv(Opera_Public, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Opera House by Public Transport.csv")
+#write_csv(Opera_Public, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Opera House by Public Transport.csv")
 
 
 #####
