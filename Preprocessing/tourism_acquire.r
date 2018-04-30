@@ -168,14 +168,19 @@ head(tourism.data)
 tourism.data <- select(tourism.data, purpose, country, year, everything())
 View(tourism.data)
 
-
 # Write data to shared drive
 write.csv(tourism.data, file=tourism_dest_filename)
 
-# create categories Business and non-business
-bus <- list(tourism.data[tourism.data$Purpose == "Employment","Business Travel"])
-nonbus <- list(tourism.data[tourism.data$Purpose == !"Employment",!"Business Travel"])
+# Summarize totals for business and non business
 
-aggregate(tourism.data$visitors,by=tourism.bus["Year","Country","Purpose", everything()], FUN=sum)   ## incomplete
+# create is_business flag which is set if visit purpose was Business Travel or Employment
+tourism.data %>%
+  mutate(is_business = ifelse(purpose %in% c("Employment","Business Travel"), 1, 0)) -> tourism.data
 
-## finish this!!
+# Sum across all metric columns by Business, Year and Country.
+aggregate(tourism.data[metric_columns],
+          by=list(
+            year=tourism.data$year,
+            is_business=tourism.data$is_business,
+            country=tourism.data$country), 
+          FUN=sum, na.rm=TRUE)
