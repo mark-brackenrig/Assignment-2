@@ -1,11 +1,22 @@
 # This file takes the tourism spreadsheet data and turns into a tidy dataset
 
-# url <- "https://www.tra.gov.au/ArticleDocuments/233/IVS1%20YE%20Dec%202017.xlsx.aspx"
-# Need to get data manually and place in drive, since website does not use direct access and instead streams data through aspx page
+## Note: these require JAVA to be installed.  Using v8+ in this code
 
-# Install XLConnect if not already installed
+# check java version ... returns error if JAVA not installed so go and get it!
+system("java -version")
+
+# set environment variable for java - this is not required if already been added to o/s system variables
+Sys.setenv(JAVA_HOME = "C:/Program Files/Java/jdk/")
+
+# url <- "https://www.tra.gov.au/ArticleDocuments/233/IVS1%20YE%20Dec%202017.xlsx.aspx"
+# Need to get data manually and place in drive, since website does support direct access (instead streams data through aspx page)
+
+# Install required packes if not already installed: 
+# XLConnect,  XLConnectJars - called by XLConnect, reshape2, stringr, saRifx
+
+install.packages("reshape2")       #has recast()
 if(!"XLConnect" %in% rownames(installed.packages())) {
-  install.packages("XLConnect")
+  install.packages("XLConnect") 
 }
 
 if(!"reshape2" %in% rownames(installed.packages())) {
@@ -13,6 +24,7 @@ if(!"reshape2" %in% rownames(installed.packages())) {
 }
 
 # Use XLConnect to deal with multiple worksheets
+library(tidyverse)  # mutate
 library(XLConnect)  # excel
 library(reshape2)   # melt
 library(stringr)    # regex
@@ -86,16 +98,16 @@ tourism.data = data.frame()
 
 # Build dataset across all sheets
 for (sheet in sheet_names){
-
+  
   # Context data for current sheet
   sheet_data <- data.frame() 
   
   # Loop through each block in the sheet as they are iterated over each visit dimension
   for (block_index in sheet_block_range) {
-
+    
     # get sheet data for visit dimension Metric
     sheet_block_data <- getVisitDimensionBlock(tourism_workbook, sheet, block_index)
-
+    
     # Change names of features to "purpose" and from 2007, to 2017
     names(sheet_block_data) <- c("purpose", sheet_year_range)
     
@@ -107,7 +119,7 @@ for (sheet in sheet_names){
       melt(id.vars=c("purpose"),
            variable.name="year",
            value.name=visit_dimension_name) -> sheet_block_data
-   
+    
     # Each block is a feature, inner join on purpose and year
     if (nrow(sheet_data) == 0) {
       sheet_data <- sheet_block_data # first time
@@ -129,9 +141,12 @@ for (sheet in sheet_names){
 # Strip leading and trailing whitespace
 tourism.data$purpose <- trimws(tourism.data$purpose)
 
-# Strip total row, and backpacker data
+# Strip total row  
 tourism.data <- tourism.data[!(tourism.data$purpose == "Total"),]
-tourism.data <- tourism.data[!(tourism.data$purpose == "Backpackers"),]
+
+# Strip backpacker data - this data duplicates the by reason data
+### Consider commenting these lines and split this into separate data frame
+tourism.data <- tourism.data[!(tourism.data$purpose == "Backpackers"),] 
 tourism.data <- tourism.data[!(tourism.data$purpose == "Non backpackers"),]
 
 # Convert to factor
@@ -145,10 +160,22 @@ for (col in metric_columns) {
   tourism.data[,col] <- as.numeric(destring(tourism.data[,col])) # convert to number, and set np to NA
 }
 
-# Check fine
+# Check structure and content are as expected
 str(tourism.data)
 head(tourism.data)
 
-# Write to shared drive
+# the sort the rows so values are in a predicable order
+tourism.data <- select(tourism.data, purpose, country, year, everything())
+View(tourism.data)
+
+
+# Write data to shared drive
 write.csv(tourism.data, file=tourism_dest_filename)
 
+# create categories Business and non-business
+bus <- list(tourism.data[tourism.data$Purpose == "Employment","Business Travel"])
+nonbus <- list(tourism.data[tourism.data$Purpose == !"Employment",!"Business Travel"])
+
+aggregate(tourism.data$visitors,by=tourism.bus["Year","Country","Purpose", everything()], FUN=sum)   ## incomplete
+
+## finish this!!
