@@ -95,6 +95,7 @@ Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timed
 }
 
 
+
 #Write to DF
 Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)) #turn to tidyform
 
@@ -102,17 +103,17 @@ Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)
 Total_Data_DF_Final <- cbind(Total_Data_DF, Timedata) #Match with the other stuff
 
 #Rename for Cleaning
-#colnames(Opera_Public) <- c("Time", "Distance", "Status", "id")
+colnames(Total_Data_DF_Final) <- c("Time", "Distance", "Status",colnames(Total_Data_DF_Final[,4:8]) )
 
 #Change columns to correct format
 #Time in Seconds
-#Opera_Public$Time <- as.numeric(as.character(Opera_Public$Time))
+Total_Data_DF_Final$Time <- as.numeric(as.character(Total_Data_DF_Final$Time))
 
 #Distance in Meters
-#Opera_Public$Distance <- as.numeric(as.character(Opera_Public$Distance))
+Total_Data_DF_Final$Distance <- as.numeric(as.character(Total_Data_DF_Final$Distance))
 
 
-#write_csv(Opera_Public, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Opera House by Public Transport.csv")
+write_csv(Total_Data_DF_Final, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Total_Data_DF_Final.csv")
 
 
 #####
