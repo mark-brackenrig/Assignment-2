@@ -147,11 +147,26 @@ keep <- c(1,keep)
 #listings <- merge(Amenities, listings, by  = "id" )
 listings$amenities <- NULL
 
-
+listings <- subset(listings, is.na(listings$price)==F)
 
 
 #### Reviews ####
+#find cancel flag
+reviews$cancelflag <- grepl("the host cancel", tolower(reviews$comments))
 
+#find proportion
+cancelflag <- as.data.frame(prop.table(table(reviews$listing_id,reviews$cancelflag),1))
+
+colnames(cancelflag) <- c("id","Var2", "Cancelflag")
+
+cancelflag <- subset(cancelflag, cancelflag$Var2=="TRUE")
+cancelflag$id <- as.numeric(as.character(cancelflag$id))
+cancelflag$Var2 <- NULL
+listings <- merge(listings, cancelflag, by = "id", all = T)
+cancelflag <- NULL
+
+#no reviews indicates no cancels
+listings$Cancelflag[is.na(listings$Cancelflag)] <- 0
 
 #### Calendar ####
 

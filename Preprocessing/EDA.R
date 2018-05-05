@@ -50,3 +50,13 @@ cor(Mark$price,Mark$latitude)
 
 test <- lm( Mark$price~Mark$longitude+Mark$latitude)
 summary(test)
+
+
+###lets do some EDA on cancel flag
+
+
+plot(listings$Cancelflag,listings$review_scores_rating)
+plot(listings$Cancelflag,listings$review_scores_value)
+plot(listings$Cancelflag[listings$Cancelflag>0]~listings$cancellation_policy[listings$Cancelflag>0])
+
+aggregate(listings$Cancelflag[listings$Cancelflag>0], by =list(listings$cancellation_policy[listings$Cancelflag>0]),summary)
