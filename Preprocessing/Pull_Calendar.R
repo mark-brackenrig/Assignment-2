@@ -30,8 +30,8 @@ webdata$Date <- as.Date(as.character(webdata$Date), "%d %B, %Y")
 webdata <- subset(webdata, webdata$City=="Sydney"&webdata$File=="calendar.csv.gz")
 
 #I do the first one so 
-#string <- paste0("http://data.insideairbnb.com/australia/nsw/sydney/",webdata$Date[1],"/data/calendar.csv.gz")
-#calendar <- read_csv(string)
+string <- paste0("http://data.insideairbnb.com/australia/nsw/sydney/",webdata$Date[1],"/data/calendar.csv.gz")
+calendar <- read_csv(string)
 colnames(calendar) <- c("id","date","available_current", "price_current" )
 
 
@@ -45,12 +45,21 @@ rm(temp)
 gc()
 }
 
-write_csv(calendar,"/Volumes/GoogleDrive/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/calendar_full.csv")
 #only look at the past two years of data
 calendar <- subset(calendar, calendar$date>="2017-01-01"&is.na(calendar$available_current)==F)
 gc()
 
 colnames(calendar)
+
+calendar <- subset(calendar, select = c( "id","date",  "available_2017-03-03",
+                                         "price2017-03-03"     , "available_2017-04-03", "price2017-04-03"   ,  
+                                         "available_2017-10-03", "price2017-10-03"   ,   "available_2017-11-07",
+                                         "price2017-11-07"     , "available_2017-12-05" ,"price2017-12-05"    , 
+                                        "available_current" ,   "price_current"     
+                                        ))
+
+write_csv(calendar,"/Volumes/GoogleDrive/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/calendar_full.csv")
+
 
 calendar$bookflag <- ifelse(calendar$available_current=="f"&calendar$`available_2017-12-05`=="t"|
                               calendar$available_current=="f"&calendar$`available_2017-11-07`=="t"|
@@ -60,5 +69,8 @@ calendar$bookflag <- ifelse(calendar$available_current=="f"&calendar$`available_
 Bookings <- aggregate(calendar$bookflag, by = list(calendar$id), sum)
 colnames(Bookings) <- c("id","bookings")
 Bookings$bookings[is.na(Bookings$bookings)] <- 0
+
+write_csv(Bookings,"/Volumes/GoogleDrive/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/bookings.csv")
+
 
 listings <- merge(listings, Bookings)
