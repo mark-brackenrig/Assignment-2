@@ -76,9 +76,8 @@ Timedata1 <- unique(subset(listings, select = c("latitude", "longitude","id")))
 
 
 
-grid <- expand.grid(destination = c("Sydney+Opera+House","Bondi+Beach", "Manly+Beach","Three+Sisters", "Pokolbin+NSW"), mode = c( "transit"))
+grid <- expand.grid(destination = c("14+Darling+Dr+Sydney"), mode = c( "transit"))
 
-grid <- subset(grid, grid$destination!="Sydney+Opera+House"|grid$mode!="transit")
 
 Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timedata
 
@@ -89,12 +88,10 @@ Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timed
   library(gmapsdistance)
 
     #Dont steal my API
-  set.api.key('')
+  set.api.key('AIzaSyCuLT1mFH6bhajliIgj1BZ4Srbf26qKseM')
   TimeTotal <-  gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = Timedata$destination[i], departure = as.numeric(as.POSIXct("2018-05-21 12:00:00")),combinations = "all",mode = Timedata$mode[i], shape = "wide")
 
 }
-
-
 
 #Write to DF
 Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)) #turn to tidyform
@@ -113,10 +110,83 @@ Total_Data_DF_Final$Time <- as.numeric(as.character(Total_Data_DF_Final$Time))
 Total_Data_DF_Final$Distance <- as.numeric(as.character(Total_Data_DF_Final$Distance))
 
 
-write_csv(Total_Data_DF_Final, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Total_Data_DF_Final.csv")
+write_csv(Total_Data_DF_Final, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Total_Data_DF_Final_ICC.csv")
 
 
 #####
+grid <- expand.grid(destination = c("Bondi+Beach"), mode = c( "transit"))
 
+
+Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timedata
+
+####Public Transport + Drive to all areas####
+
+
+Total_Data<-  foreach(i=1:nrow(Timedata)) %dopar% {
+  library(gmapsdistance)
+  
+  #Dont steal my API
+  set.api.key('AIzaSyCuLT1mFH6bhajliIgj1BZ4Srbf26qKseM')
+  TimeTotal <-  gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = Timedata$destination[i], departure = as.numeric(as.POSIXct("2018-05-21 12:00:00")),combinations = "all",mode = Timedata$mode[i], shape = "wide")
+  
+}
+
+#Write to DF
+Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)) #turn to tidyform
+
+
+
+Total_Data_DF_Final <- cbind(Total_Data_DF, Timedata) #Match with the other stuff
+
+#Rename for Cleaning
+colnames(Total_Data_DF_Final) <- c("Time", "Distance", "Status",colnames(Total_Data_DF_Final[,4:8]) )
+
+#Change columns to correct format
+#Time in Seconds
+Total_Data_DF_Final$Time <- as.numeric(as.character(Total_Data_DF_Final$Time))
+
+#Distance in Meters
+Total_Data_DF_Final$Distance <- as.numeric(as.character(Total_Data_DF_Final$Distance))
+
+
+write_csv(Total_Data_DF_Final, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Total_Data_DF_Final_Bondi.csv")
+
+####
+grid <- expand.grid(destination = c("Manly+Beach"), mode = c( "transit"))
+
+
+Timedata <- merge(grid, Timedata1) #take every combination of the grid and Timedata
+
+####Public Transport + Drive to all areas####
+
+
+Total_Data<-  foreach(i=1:nrow(Timedata)) %dopar% {
+  library(gmapsdistance)
+  
+  #Dont steal my API
+  set.api.key('AIzaSyCuLT1mFH6bhajliIgj1BZ4Srbf26qKseM')
+  TimeTotal <-  gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = Timedata$destination[i], departure = as.numeric(as.POSIXct("2018-05-21 12:00:00")),combinations = "all",mode = Timedata$mode[i], shape = "wide")
+  
+}
+
+#Write to DF
+Total_Data_DF <- as.data.frame(matrix(unlist(Total_Data), ncol = 3,byrow = TRUE)) #turn to tidyform
+
+
+
+Total_Data_DF_Final <- cbind(Total_Data_DF, Timedata) #Match with the other stuff
+
+#Rename for Cleaning
+colnames(Total_Data_DF_Final) <- c("Time", "Distance", "Status",colnames(Total_Data_DF_Final[,4:8]) )
+
+#Change columns to correct format
+#Time in Seconds
+Total_Data_DF_Final$Time <- as.numeric(as.character(Total_Data_DF_Final$Time))
+
+#Distance in Meters
+Total_Data_DF_Final$Distance <- as.numeric(as.character(Total_Data_DF_Final$Distance))
+
+
+write_csv(Total_Data_DF_Final, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Total_Data_DF_Final_Manly.csv")
 
 

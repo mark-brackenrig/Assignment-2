@@ -32,14 +32,11 @@ initial_zoom = 10
 
 pal <-  colorFactor(c("red","green") , Mark$is_business_travel_ready)
 
-leaflet(Mark) %>% addProviderTiles(providers$CartoDB.Positron,
-                                    options = providerTileOptions(noWrap = TRUE)
-)%>%
+leaflet(subset(Mark,Mark$is_business_travel_ready=="t")) %>% addProviderTiles(providers$CartoDB.Positron,options = providerTileOptions(noWrap = TRUE))%>%
   setView(lat = initial_lat, lng = initial_lng, zoom = initial_zoom) %>%
   clearMarkers() %>%
   addCircleMarkers(
-    color = ~pal(Mark$is_business_travel_ready),
-    radius = ~(price^0.5)/10,
+    radius = ~(log(price)^2)/5,
     stroke = FALSE, fillOpacity = 0.5,
     labelOptions= labelOptions(style = list("white-space"= "pre", "font-size"= "14px")))
 
@@ -60,3 +57,19 @@ plot(listings$Cancelflag,listings$review_scores_value)
 plot(listings$Cancelflag[listings$Cancelflag>0]~listings$cancellation_policy[listings$Cancelflag>0])
 
 aggregate(listings$Cancelflag[listings$Cancelflag>0], by =list(listings$cancellation_policy[listings$Cancelflag>0]),summary)
+
+
+###Begin Ploting
+#Plot1
+
+pal <-  colorFactor(c("green","red") , (max(Mark$Time)-Mark$Time)/(max(Mark$Time)-min(Mark$Time)))
+
+leaflet(subset(Mark,Mark$is_business_travel_ready=="t")) %>% addProviderTiles(providers$CartoDB.Positron,options = providerTileOptions(noWrap = TRUE))%>%
+  setView(lat = initial_lat, lng = initial_lng, zoom = initial_zoom) %>%
+  clearMarkers() %>%
+  addCircleMarkers(
+    color = ~pal((max(Mark$Time)-Mark$Time)/(max(Mark$Time)-min(Mark$Time))),
+    radius = ~(log(price)^3)/12,
+    stroke = FALSE, fillOpacity = 0.5,
+    labelOptions= labelOptions(style = list("white-space"= "pre", "font-size"= "14px")))
+

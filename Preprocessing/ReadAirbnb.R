@@ -1,6 +1,6 @@
 ### Ingest Airbnb Dataset ###
 
-setwd("G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB")
+setwd(Gdrive)
 
 #Read all file names in the AirBnB Dataset file
 files <- list.files()
