@@ -126,7 +126,7 @@ Total_Data<-  foreach(i=1:nrow(Timedata)) %dopar% {
   library(gmapsdistance)
   
   #Dont steal my API
-  set.api.key('AIzaSyCuLT1mFH6bhajliIgj1BZ4Srbf26qKseM')
+  set.api.key('API Key')
   TimeTotal <-  gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = Timedata$destination[i], departure = as.numeric(as.POSIXct("2018-05-21 12:00:00")),combinations = "all",mode = Timedata$mode[i], shape = "wide")
   
 }
