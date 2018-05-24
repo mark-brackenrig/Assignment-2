@@ -28,7 +28,8 @@ listings$license <- NULL #No information
 #Remove incosistent fields...
 listings <- subset(listings, !listings$state %in% c("VIC", "Queensland")&!listings$market %in% c("Gold Coast-Tweed","Central Florida Atlantic Coast","Prague")&is.na(listings$jurisdiction_names))
 listings$jurisdiction_names <- NULL
-
+listings$state <- NULL #no information after cleaning
+listings$square_feet <- NULL #only 300 valid records
 
 
 ## Price Fields 
@@ -37,6 +38,7 @@ listings$jurisdiction_names <- NULL
       x <- gsub(pattern = "\\$", replacement = "", x)
       x <- gsub(pattern = "\\,", replacement = "", x)
       x <- as.numeric(x)
+      
     }
     
     #Check price fields
@@ -64,6 +66,11 @@ listings$host_response_rate <- gsub(pattern = "\\%", replacement = "", listings$
 #this is cosmetic code, its just so that R doesnt throw a warning
 listings$host_response_rate[listings$host_response_rate=="N/A"] <- NA
 
+#Remove N/A Values
+listings$security_deposit[is.na(listings$security_deposit)] <- 0
+listings$cleaning_fee[is.na(listings$cleaning_fee)] <- 0
+
+
 #Convert to numeric
 listings$host_response_rate <- as.numeric(listings$host_response_rate)
 
@@ -87,6 +94,14 @@ listings$bed_type <- as.factor(listings$bed_type)
 listings$cancellation_policy <- factor(listings$cancellation_policy,levels = c("flexible", "moderate","strict","super_strict_30"), ordered = T)
 listings$require_guest_phone_verification <- as.factor(listings$require_guest_phone_verification)
 listings$require_guest_profile_picture <- as.factor(listings$require_guest_profile_picture)
+listings$host_since <- as.Date(listings$host_since, format = "%d/%m/%Y")
+listings$first_review <- as.Date(listings$first_review, format = "%d/%m/%Y")
+listings$last_review <- as.Date(listings$last_review, format = "%d/%m/%Y")
+listings$host_neighbourhood <- as.factor(listings$host_neighbourhood)
+listings$neighbourhood <- as.factor(listings$neighbourhood)
+listings$neighbourhood_cleansed <- as.factor(listings$neighbourhood_cleansed)
+listings$neighbourhood_group_cleansed <- as.factor(listings$neighbourhood_group_cleansed)
+listings$city <- as.factor(listings$city) 
 
 #Host Verifications
 Host_Verifications <- subset(listings, select = c("id", "host_verifications"))
@@ -169,5 +184,4 @@ cancelflag <- NULL
 listings$Cancelflag[is.na(listings$Cancelflag)] <- 0
 
 #### Calendar ####
-
-
+calendar$price <- priceclean(calendar$price)

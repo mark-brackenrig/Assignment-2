@@ -13,4 +13,8 @@ setwd(WD)
 #Clean data - Put it in correct formate, etc..
 source("Preprocessing/Cleaning.r")
 
+#Start building features from the cleaning phase
+source("Preprocessing/Feature Engineering.r")
 
+#Build a modelling table
+source("Preprocessing/Modelling Table.r")
