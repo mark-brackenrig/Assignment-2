@@ -49,10 +49,10 @@ pR2(Model2)
 
 #Still do not look good. Maybe there is an interaction term?
 
-Model3 <- glm(data = Model,is_business_travel_ready~log(price+0.1)+log(bookings+0.1)+log(price+0.1)*log(bookings+0.1), family = "binomial")
+#Model3 <- glm(data = Model,is_business_travel_ready~log(price+0.1)+log(bookings+0.1)+log(price+0.1)*log(bookings+0.1), family = "binomial")
 
 
-summary(Model3)
+#summary(Model3)
 
 
 #I need to review the text on this one. But I do not htink the assumptions apply here
@@ -60,19 +60,21 @@ summary(Model3)
 
 #Making Adjustment
 #There are other variables that can rerpresent occupancy
-Model4 <- glm(data = Model,is_business_travel_ready~log(price+0.1)+log(bookings+0.1)+log(reviews_per_month+0.1), family = "binomial")
+Model3 <- glm(data = Model,is_business_travel_ready~log(price+0.1)+log(bookings+0.1)+log(reviews_per_month+0.1), family = "binomial")
 
-summary(Model4)
+summary(Model3)
 
-boxplot(Model4$fitted.values~Model4$model$is_business_travel_ready)
+boxplot(Model3$fitted.values~Model3$model$is_business_travel_ready)
 
-auc(roc(Model4$fitted.values,Model4$model$is_business_travel_ready))
+auc(roc(Model3$fitted.values,Model3$model$is_business_travel_ready))
 
-plot(roc(Model4$fitted.values,Model4$model$is_business_travel_ready))
+plot(roc(Model3$fitted.values,Model3$model$is_business_travel_ready))
 
 #The ROC is getting there! HAZZAH!
 
-pR2(Model4)
+
+
+pR2(Model3)
 
 #Even though AUC is goodl. The McFadden R^2 is still reasonably low
 #plot(Model4)

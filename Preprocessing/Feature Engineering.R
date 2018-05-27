@@ -12,7 +12,7 @@ findCorrelation(cor(Amenities[,-1]), cutoff = 0.3)
 AmenComp <- prcomp(Amenities[,-1])
 
 
-screeplot(AmenComp,type = c("lines"))
+screeplot(AmenComp,type = c("lines"),main = "Amenities PCA")
 
 #From the visual method it is hard to determine the number of Principal components to select
 

@@ -57,3 +57,15 @@ plot_ly(data = subset(Chart2, Chart2$Var2=="t"), y=~Freq*100, x = ~Var1, type = 
   layout(title = "Number of Properties that are 'Business Travel Ready'",  yaxis = list(title = "Proportion of listings in Sydney"),barmode = "group"
   )%>%
   config(displayModeBar = F)
+
+plot_ly(data = subset(Model,Model$is_business_travel_ready=='f'), y=~AmenitiesPC2, x = ~AmenitiesPC1, type = "scatter", name = "Not Business Travel Ready", marker = list(color = c("red")), opacity = 0.6)%>%
+  add_trace(data = subset(Model,Model$is_business_travel_ready=='t'), y=~AmenitiesPC2, x = ~AmenitiesPC1, type = "scatter", name = "Business Travel Ready", marker = list(color = c("blue")), opacity = 0.8)%>%
+  layout(title = "Amenities Principal Components",  yaxis = list(title = "Second Principal Component", showgrid = F, zeroline = F),xaxis = list(title = "First Principal Component", showgrid = F)  )%>%
+  config(displayModeBar = F)
+
+
+plot_ly(data = Model, y=~HostPC1, x = ~ifelse(is_business_travel_ready=='t', "Business Travel Ready", "Not Business Travel Ready"), type = "box")%>%
+  layout(title = "First PC of Host Verifications",  yaxis = list(title = "First Principal Component of Host Verification"),xaxis = list(title = " ")  )%>%
+  config(displayModeBar = F)
+
+
