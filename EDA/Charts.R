@@ -69,3 +69,21 @@ plot_ly(data = Model, y=~HostPC1, x = ~ifelse(is_business_travel_ready=='t', "Bu
   config(displayModeBar = F)
 
 
+Chart3 <- as.data.frame(prop.table(table(Model$Cancelflag>0.05, Model$is_business_travel_ready),2))
+
+plot_ly(data = subset(Chart3, Chart3$Var2=="t"&Chart3$Var1==T), y=~Freq*100, x = ~Var1, type = "bar", hoverinfo = 'text',
+        text = ~paste0("Proportion: ", round(Freq,digits = 2),"%"), name = "Business Ready")%>%
+  add_trace(data = subset(Chart3, Chart3$Var2=="f"&Chart3$Var1==T), y=~Freq*100, x = ~Var1 ,type = "bar", hoverinfo = 'text',
+            text = ~paste0("Proportion: ", round(Freq,digits = 2),"%"), name = "Not Buiness Ready")%>%
+  layout(title = "Proportion of listings with cancel flag > 5%",  yaxis = list(title = "% listings with cancel flag >5%"),barmode = "group", xaxis = list(showticklabels = F, title = "")
+  )%>%
+  config(displayModeBar = F)
+
+
+aggregate(Model$cleaning_fee, by=list(Model$is_business_travel_ready),summary)
+
+
+plot_ly(data = Model, y=~cleaning_fee*100/price, x = ~ifelse(is_business_travel_ready=='t', "Business Travel Ready", "Not Business Travel Ready"), type = "box")%>%
+  layout(title = "Business Ready (BR) listings by <br>cleaning fee as a Percentage of price",  yaxis = list(title = "cleaning fee as a<br> percentage of price (%)", range = c(0,280)),xaxis = list(title = " "),
+         margin = list(t = 75, l = 75))%>%
+  config(displayModeBar = F)

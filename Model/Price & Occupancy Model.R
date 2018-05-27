@@ -1,4 +1,6 @@
 ####is there an assication between price and occupancy rates and whether the property has BR status
+library(AUC)
+library(pscl)
 
 set.seed(42)
 Sample <- sample(x = nrow(Model),nrow(Model)*0.7)
@@ -11,14 +13,6 @@ Model1 <- glm(data = train,is_business_travel_ready~price+bookings, family = "bi
 summary(Model1)
 
 #Both are highly significant, are the predictors correlated?
-
-library(AUC)
-library(pscl)
-
-
-
-
-
 
 
 #these plots dont look right. Lets inspect the variables
@@ -180,7 +174,7 @@ train$model8predict <- predict(Model8, train,type = "response")
 auc(roc(train$model8predict,train$is_business_travel_ready))
 
 auc(roc(test$model8predict,test$is_business_travel_ready))
-
+plot(roc(test$model8predict,test$is_business_travel_ready))
 
 #TODO backward model selection
 

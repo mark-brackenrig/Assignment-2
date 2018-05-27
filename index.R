@@ -22,3 +22,9 @@ source("Preprocessing/Modelling Table.r")
 #Create a model
 
 source("Model/Price & Occupancy Model.r")
+
+#visualisations
+
+source("EDA/Amenities Princomp Plots.r")
+
+source("EDA/Charts.r")
