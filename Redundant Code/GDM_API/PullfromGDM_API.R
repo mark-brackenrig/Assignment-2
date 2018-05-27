@@ -24,31 +24,31 @@ Timedata1 <- unique(subset(listings, select = c("latitude", "longitude","id")))
 
 
 ####Public Transport to Opera House####
-#Opera_Public_Data <- foreach(i=1:nrow(Timedata)) %dopar% {
-#  library(gmapsdistance)
+Opera_Public_Data <- foreach(i=1:nrow(Timedata)) %dopar% {
+  library(gmapsdistance)
   #Dont steal my API
-#  set.api.key('YOU MUST SEt THE API KEY!!!')
+  set.api.key('YOU MUST SEt THE API KEY!!!')
   
-#  OperaTimePublic <- gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = 'Sydney+Opera+House', departure = as.numeric(as.POSIXct("2018-04-21 12:00:00")),combinations = "all",mode = "transit", shape = "wide")
+ OperaTimePublic <- gmapsdistance(origin =paste0(Timedata$latitude[i],"+",Timedata$longitude[i]),destination = 'Sydney+Opera+House', departure = as.numeric(as.POSIXct("2018-04-21 12:00:00")),combinations = "all",mode = "transit", shape = "wide")
   
-#}
+}
 
 #Write to DF
-#Opera_Public <- as.data.frame(matrix(unlist(Opera_Public_Data), ncol = 3,byrow = TRUE))
-#Opera_Public <- cbind(Opera_Public, listings$id)
+Opera_Public <- as.data.frame(matrix(unlist(Opera_Public_Data), ncol = 3,byrow = TRUE))
+Opera_Public <- cbind(Opera_Public, listings$id)
 
 #Rename for Cleaning
-#colnames(Opera_Public) <- c("Time", "Distance", "Status", "id")
+colnames(Opera_Public) <- c("Time", "Distance", "Status", "id")
 
 #Change columns to correct format
 #Time in Seconds
-#Opera_Public$Time <- as.numeric(as.character(Opera_Public$Time))
+Opera_Public$Time <- as.numeric(as.character(Opera_Public$Time))
 
 #Distance in Meters
-#Opera_Public$Distance <- as.numeric(as.character(Opera_Public$Distance))
+Opera_Public$Distance <- as.numeric(as.character(Opera_Public$Distance))
 
 
-#write_csv(Opera_Public, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Opera House by Public Transport.csv")
+write_csv(Opera_Public, "G:/Team Drives/STDS - Assignment 2 - 3MDL/Dataset/AirBnB/Opera House by Public Transport.csv")
 
 
 

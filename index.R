@@ -18,3 +18,7 @@ source("Preprocessing/Feature Engineering.r")
 
 #Build a modelling table
 source("Preprocessing/Modelling Table.r")
+
+#Create a model
+
+source("Model/Price & Occupancy Model.r")

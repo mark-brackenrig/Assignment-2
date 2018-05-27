@@ -164,7 +164,7 @@ listings$amenities <- NULL
 
 listings <- subset(listings, is.na(listings$price)==F)
 
-
+listings$host_is_superhost[is.na(listings$host_is_superhost)] <- "f"
 #### Reviews ####
 #find cancel flag
 reviews$cancelflag <- grepl("the host cancel", tolower(reviews$comments))
@@ -182,6 +182,8 @@ cancelflag <- NULL
 
 #no reviews indicates no cancels
 listings$Cancelflag[is.na(listings$Cancelflag)] <- 0
+
+listings$reviews_per_month[is.na(listings$reviews_per_month)] <-0
 
 #### Calendar ####
 calendar$price <- priceclean(calendar$price)

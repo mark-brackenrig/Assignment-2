@@ -40,6 +40,6 @@ Model$Status <- NULL
 
 Model <- merge(Cal_Struc, Model, all.y= T)
 #Remove unwanted tables 
-rm(Host_comp, Host_Verifications, `Opera House by Public Transport`, Primary_Research, Primary_Research_Demographics, reviews, Cal_Struc, calendar, bookings, Amenities, Amenities_comp, Sydney_Business_Parks_and_Conference_Centers, Time_data)
+#rm(Host_comp, Host_Verifications, `Opera House by Public Transport`, Primary_Research, Primary_Research_Demographics, reviews, Cal_Struc, calendar, bookings, Amenities, Amenities_comp, Sydney_Business_Parks_and_Conference_Centers, Time_data)
 
 
